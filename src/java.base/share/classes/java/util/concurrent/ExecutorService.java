@@ -217,6 +217,8 @@ public interface ExecutorService extends Executor {
      * Future's {@code get} method will return the task's result upon
      * successful completion.
      *
+     * 执行有返回结果的异步任务
+     *
      * <p>
      * If you would like to immediately block waiting
      * for a task, you can use constructions of the form

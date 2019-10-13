@@ -376,20 +376,34 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * we can only terminate if, after seeing that it is empty, we see
      * that workerCount is 0 (which sometimes entails a recheck -- see
      * below).
+     *
+     * 前三位代表runState ，后面的29位代表workerCount
      */
     private final AtomicInteger ctl = new AtomicInteger(ctlOf(RUNNING, 0));
     private static final int COUNT_BITS = Integer.SIZE - 3;
+    // 11111111111111111111111111111  length = 29
     private static final int COUNT_MASK = (1 << COUNT_BITS) - 1;
 
-    // runState is stored in the high-order bits
+    // runState is stored in the high-order bits  << 有符号左移位
+    // 11100000000000000000000000000000
     private static final int RUNNING    = -1 << COUNT_BITS;
+    // 0
     private static final int SHUTDOWN   =  0 << COUNT_BITS;
+    //   100000000000000000000000000000
     private static final int STOP       =  1 << COUNT_BITS;
+    //  1000000000000000000000000000000
     private static final int TIDYING    =  2 << COUNT_BITS;
+    //  1100000000000000000000000000000
     private static final int TERMINATED =  3 << COUNT_BITS;
 
     // Packing and unpacking ctl
     private static int runStateOf(int c)     { return c & ~COUNT_MASK; }
+
+    /**
+     * 获取 {@link #ctl} 的workerCount
+     * @param c          {@link #ctl}
+     * @return           workerCount
+     */
     private static int workerCountOf(int c)  { return c & COUNT_MASK; }
     private static int ctlOf(int rs, int wc) { return rs | wc; }
 
@@ -406,6 +420,9 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
         return c >= s;
     }
 
+    /**
+     * runState是否处于running状态
+     */
     private static boolean isRunning(int c) {
         return c < SHUTDOWN;
     }
@@ -883,11 +900,14 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * @return true if successful
      */
     private boolean addWorker(Runnable firstTask, boolean core) {
+        // break retry;, continue retry 会直接到此处生效，并不是只在二层for中生效
         retry:
         for (int c = ctl.get();;) {
-            // Check if queue empty only if necessary.
+            // Check if queue empty only if necessary.   SHUTDOWN、STOP、TIDYING、TERMINATED
+            // 1. STOP、TIDYING、TERMINATED，则return false
+            // 2. SHUTDOWN，firstTask != null或者workQueue.isEmpty()，则return false
             if (runStateAtLeast(c, SHUTDOWN)
-                && (runStateAtLeast(c, STOP)
+                && (runStateAtLeast(c, STOP)  // STOP、TIDYING、TERMINATED
                     || firstTask != null
                     || workQueue.isEmpty()))
                 return false;
@@ -980,6 +1000,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      */
     private void processWorkerExit(Worker w, boolean completedAbruptly) {
         if (completedAbruptly) // If abrupt, then workerCount wasn't adjusted
+            // 如果这个线程已经被中断
             decrementWorkerCount();
 
         final ReentrantLock mainLock = this.mainLock;
@@ -994,6 +1015,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
         tryTerminate();
 
         int c = ctl.get();
+        // RUNNING、SHUTDOWN
         if (runStateLessThan(c, STOP)) {
             if (!completedAbruptly) {
                 int min = allowCoreThreadTimeOut ? 0 : corePoolSize;
@@ -1121,6 +1143,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
                      (Thread.interrupted() &&
                       runStateAtLeast(ctl.get(), STOP))) &&
                     !wt.isInterrupted())
+                    // 中断此线程
                     wt.interrupt();
                 try {
                     beforeExecute(wt, task);
@@ -1339,18 +1362,23 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
          * and so reject the task.
          */
         int c = ctl.get();
+        // workCount 小于 corePoolSize 时创建新的线程对command进行处理
         if (workerCountOf(c) < corePoolSize) {
             if (addWorker(command, true))
                 return;
             c = ctl.get();
         }
         if (isRunning(c) && workQueue.offer(command)) {
+            // double-check 再次检查runState的状态
             int recheck = ctl.get();
+            // 如果runState不是 running 并且试图从队列中删除command成功 则reject
             if (! isRunning(recheck) && remove(command))
                 reject(command);
+            // 如果当前workCount为0，则新增一个线程
             else if (workerCountOf(recheck) == 0)
                 addWorker(null, false);
         }
+        // 如果队列已经满，则新增非core线程来处理任务
         else if (!addWorker(command, false))
             reject(command);
     }

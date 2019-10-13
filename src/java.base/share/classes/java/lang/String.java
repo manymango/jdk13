@@ -816,6 +816,9 @@ public final class String
      * within the text range given by {@code index} and
      * {@code codePointOffset} count as one code point each.
      *
+     * 与index偏移为codePointOffset，其在String中的索引，
+     * 其中codePointOffset可正可负
+     *
      * @param index the index to be offset
      * @param codePointOffset the offset in code points
      * @return the index within this {@code String}
