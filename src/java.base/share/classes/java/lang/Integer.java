@@ -1630,6 +1630,8 @@ public final class Integer extends Number
      * <li>ceil(log<sub>2</sub>(x)) = {@code 32 - numberOfLeadingZeros(x - 1)}
      * </ul>
      *
+     * 返回前面bit为0的数量
+     *
      * @param i the value whose number of leading zeros is to be computed
      * @return the number of zero bits preceding the highest-order
      *     ("leftmost") one-bit in the two's complement binary representation
