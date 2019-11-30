@@ -425,7 +425,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
 
     /**
      * The next size value at which to resize (capacity * load factor).
-     *
+     * 什么时候需要 resize the table 的标志
      * @serial
      */
     // (The javadoc description is true upon serialization.
@@ -786,6 +786,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
             resize();
         else if ((e = tab[index = (n - 1) & hash]) != null) {
             TreeNode<K,V> hd = null, tl = null;
+            // head <--> node <--> node <--> node <--> node <--> tl
             do {
                 TreeNode<K,V> p = replacementTreeNode(e, null);
                 if (tl == null)
@@ -1032,6 +1033,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
      */
     public Set<Map.Entry<K,V>> entrySet() {
         Set<Map.Entry<K,V>> es;
+        // EntrySet()方法里面有迭代器可以对table进行迭代
         return (es = entrySet) == null ? (entrySet = new EntrySet()) : es;
     }
 
@@ -1523,6 +1525,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
                 throw new ConcurrentModificationException();
             if (e == null)
                 throw new NoSuchElementException();
+            // 遍历方式：index++以及node.next
             if ((next = (current = e).next) == null && (t = table) != null) {
                 do {} while (index < t.length && (next = t[index++]) == null);
             }
@@ -1984,13 +1987,15 @@ public class HashMap<K,V> extends AbstractMap<K,V>
         }
 
         /**
-         * Forms tree of the nodes linked from this node.
+         * Forms tree of the nodes linked from this node. 数化
          */
         final void treeify(Node<K,V>[] tab) {
             TreeNode<K,V> root = null;
+            // this指的是hd
             for (TreeNode<K,V> x = this, next; x != null; x = next) {
                 next = (TreeNode<K,V>)x.next;
                 x.left = x.right = null;
+                // 根节点 绘制为黑色
                 if (root == null) {
                     x.parent = null;
                     x.red = false;
@@ -2019,6 +2024,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
                                 xp.left = x;
                             else
                                 xp.right = x;
+                            // 插入新的节点后让树保持平衡
                             root = balanceInsertion(root, x);
                             break;
                         }
@@ -2302,13 +2308,18 @@ public class HashMap<K,V> extends AbstractMap<K,V>
                                                     TreeNode<K,V> x) {
             x.red = true;
             for (TreeNode<K,V> xp, xpp, xppl, xppr;;) {
+                // 情形1 节点为父节点，设置为黑色即可
                 if ((xp = x.parent) == null) {
                     x.red = false;
                     return x;
                 }
+                // 新节点的父节点和黑色或者其父父节点为空
                 else if (!xp.red || (xpp = xp.parent) == null)
                     return root;
+                // 以下情形新的父节点都为红色
+                // 父节点是祖父节点的左子节点
                 if (xp == (xppl = xpp.left)) {
+                    // 情形三 父节点和叔父节点都是红色
                     if ((xppr = xpp.right) != null && xppr.red) {
                         xppr.red = false;
                         xp.red = false;
@@ -2316,10 +2327,12 @@ public class HashMap<K,V> extends AbstractMap<K,V>
                         x = xpp;
                     }
                     else {
+                        // 情形四 当前节点是父节点的右子节点，并且叔父节点为黑色或者为空
                         if (x == xp.right) {
                             root = rotateLeft(root, x = xp);
                             xpp = (xp = x.parent) == null ? null : xp.parent;
                         }
+                        // 情形5 当前节点是父节点的左子节点，并且叔父节点为黑色或者为空
                         if (xp != null) {
                             xp.red = false;
                             if (xpp != null) {
