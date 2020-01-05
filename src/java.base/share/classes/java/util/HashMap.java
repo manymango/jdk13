@@ -385,6 +385,9 @@ public class HashMap<K,V> extends AbstractMap<K,V>
      *       7        2^3     8
      *       8        2^3     8
      *       9        2^4     16
+     *
+     *  >>    右移，高位补符号位，即整数补0，负数补1
+     *  >>>   右移补0
      */
     static final int tableSizeFor(int cap) {
         // 无符号右移，最高位补0
