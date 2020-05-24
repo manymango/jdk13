@@ -792,10 +792,14 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
     /**
      * Table initialization and resizing control.  When negative, the
      * table is being initialized or resized: -1 for initialization,
-     * else -(1 + the number of active resizing threads).  Otherwise,
+     * else -(1 + the number of active resizing threads).
+     * -1 代表正在初始化   -（1+n）代表有n个线程正在扩容
+     * Otherwise,
      * when table is null, holds the initial table size to use upon
      * creation, or 0 for default. After initialization, holds the
      * next element count value upon which to resize the table.
+     * table还未被创建的时，表示下次初始化table的大小，0为默认值。
+     * 初始化之后，代表下次扩容table的大小。
      */
     private transient volatile int sizeCtl;
 
@@ -805,7 +809,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
     private transient volatile int transferIndex;
 
     /**
-     * Spinlock (locked via CAS) used when resizing and/or creating CounterCells.
+     * Spinlock (locked via CAS) used when resiziRESIZE_STAMP_BITSng and/or creating CounterCells.
      */
     private transient volatile int cellsBusy;
 
@@ -883,8 +887,8 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      * @param loadFactor the load factor (table density) for
      * establishing the initial table size
      * @param concurrencyLevel the estimated number of concurrently
-     * updating threads. The implementation may use this value as
-     * a sizing hint.
+     * updating threads.(预估的线程数)  The implementation may use this value as
+     * a sizing hint.（调整提示）
      * @throws IllegalArgumentException if the initial capacity is
      * negative or the load factor or concurrencyLevel are
      * nonpositive
@@ -893,6 +897,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
                              float loadFactor, int concurrencyLevel) {
         if (!(loadFactor > 0.0f) || initialCapacity < 0 || concurrencyLevel <= 0)
             throw new IllegalArgumentException();
+        // 初始容量不能等于同步等级
         if (initialCapacity < concurrencyLevel)   // Use at least as many bins
             initialCapacity = concurrencyLevel;   // as estimated threads
         long size = (long)(1.0 + (long)initialCapacity / loadFactor);
