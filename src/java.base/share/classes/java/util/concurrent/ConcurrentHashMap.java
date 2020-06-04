@@ -83,7 +83,7 @@ import jdk.internal.misc.Unsafe;
  * thread safety but not on its synchronization details.
  *
  * <p>Retrieval operations (including {@code get}) generally do not
- * block, so may overlap with update operations (including {@code put}
+ * block(阻塞), so may overlap with update operations (including {@code put}
  * and {@code remove}). Retrievals reflect the results of the most
  * recently <em>completed</em> update operations holding upon their
  * onset. (More formally, an update operation for a given key bears a
