@@ -503,7 +503,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      * exactly 1<<30 to stay within Java array allocation and indexing
      * bounds for power of two table sizes, and is further required
      * because the top two bits of 32bit hash fields are used for
-     * control purposes.
+     * control purposes.   1 << 31 为负数了
      */
     private static final int MAXIMUM_CAPACITY = 1 << 30;
 
@@ -591,7 +591,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
     static final int MOVED     = -1; // hash for forwarding nodes
     static final int TREEBIN   = -2; // hash for roots of trees
     static final int RESERVED  = -3; // hash for transient reservations
-    static final int HASH_BITS = 0x7fffffff; // usable bits of normal node hash
+    static final int HASH_BITS = 0x7fffffff; // usable bits of normal node hash   31bit全部为1
 
     /** Number of CPUS, to place bounds on some sizings */
     static final int NCPU = Runtime.getRuntime().availableProcessors();
@@ -678,14 +678,24 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
     /* ---------------- Static utilities -------------- */
 
     /**
-     * Spreads (XORs) higher bits of hash to lower and also forces top
-     * bit to 0. Because the table uses power-of-two masking, sets of
+     * Spreads (XORs 异或 相同为0 不同为1) higher bits of hash to lower and also forces top
+     * bit to 0.
+     * Because the table uses power-of-two masking, sets of
      * hashes that vary only in bits above the current mask will
-     * always collide. (Among known examples are sets of Float keys
+     * always collide.
+     * 因为该表使用2的幂次掩码，所以仅在当前掩码上方的位中变化的哈希集将始终发生冲突。
+     *
+     * (Among known examples are sets of Float keys
      * holding consecutive whole numbers in small tables.)  So we
      * apply a transform that spreads the impact of higher bits
-     * downward. There is a tradeoff between speed, utility, and
-     * quality of bit-spreading. Because many common sets of hashes
+     * downward.
+     * （众所周知的示例是在小表中包含连续整数的Float键集。）因此，我们应用了一种变换，将向下传播较高位的影响。
+     *
+     * There is a tradeoff between speed, utility, and
+     * quality of bit-spreading.
+     * 在速度，实用性和位扩展质量之间需要权衡。
+     *
+     * Because many common sets of hashes
      * are already reasonably distributed (so don't benefit from
      * spreading), and because we use trees to handle large sets of
      * collisions in bins, we just XOR some shifted bits in the
@@ -995,8 +1005,8 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
     }
 
     /**
-     * Maps the specified key to the specified value in this table.
-     * Neither the key nor the value can be null.
+     * Maps the specified key to the specified value in this table. （映射指定的value和key）
+     * Neither the key nor the value can be null. （value和key都不能为空）
      *
      * <p>The value can be retrieved by calling the {@code get} method
      * with a key that is equal to the original key.
