@@ -960,6 +960,8 @@ public final class Unsafe {
      * Reports the location of the field with a given name in the storage
      * allocation of its class.
      *
+     * 字段在该类中的偏移量
+     *
      * @throws NullPointerException if any parameter is {@code null}.
      * @throws InternalError if there is no field named {@code name} declared
      *         in class {@code c}, i.e., if {@code c.getDeclaredField(name)}
