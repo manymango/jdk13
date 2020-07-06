@@ -1044,6 +1044,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
                 return fv;
             else {
                 V oldVal = null;
+                // 锁住首节点
                 synchronized (f) {
                     if (tabAt(tab, i) == f) {
                         if (fh >= 0) {
