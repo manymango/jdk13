@@ -99,6 +99,8 @@ public class Object {
      * As far as is reasonably practical, the {@code hashCode} method defined
      * by class {@code Object} returns distinct integers for distinct objects.
      *
+     * 获取散列码，确定该对象想hash表中的位置
+     *
      * @return  a hash code value for this object.
      * @see     java.lang.Object#equals(java.lang.Object)
      * @see     java.lang.System#identityHashCode
@@ -311,6 +313,9 @@ public class Object {
      * In all respects, this method behaves as if {@code wait(0L, 0)}
      * had been called. See the specification of the {@link #wait(long, int)} method
      * for details.
+     *
+     * 线程进入waiting状态，并且会释放对象的锁，等待到通知之后才会继续执行
+     * wait()/notify()可以实现等待/通知机制
      *
      * @throws IllegalMonitorStateException if the current thread is not
      *         the owner of the object's monitor

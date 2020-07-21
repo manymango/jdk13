@@ -119,6 +119,9 @@ import static java.util.function.Predicate.not;
  * implementation of string conversion is typically through the method {@code toString},
  * defined by {@code Object} and inherited by all classes in Java.
  *
+ * string的线程安全性
+ * 主要原因是string内部存储字符串的char数组以及和char数组相关的信息都是final的，这就保证了string对象生成的那一刻他在内存里就是不可变的。
+ *
  * @author  Lee Boynton
  * @author  Arthur van Hoff
  * @author  Martin Buchholz

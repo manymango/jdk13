@@ -1052,6 +1052,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
                     if (tabAt(tab, i) == f) {
                         // hash > 大于0表示为链表，否则为红黑树
                         if (fh >= 0) {
+                            // for循环加入到桶中
                             binCount = 1;
                             for (Node<K,V> e = f;; ++binCount) {
                                 K ek;
@@ -2336,19 +2337,24 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      *
      * 转移后重新检查占用率，以查看是否已经需要其他调整大小，因为调整大小是滞后的。
      *
-     * @param x the count to add
+     * @param x the count to add    新put的个数
      * @param check if <0, don't check resize, if <= 1 only check if uncontended
      */
     private final void addCount(long x, int check) {
         CounterCell[] cs; long b, s;
+        // 如果计数盒子不为空并且更新baseCount成功
         if ((cs = counterCells) != null ||
             !U.compareAndSetLong(this, BASECOUNT, b = baseCount, s = b + x)) {
             CounterCell c; long v; int m;
             boolean uncontended = true;
+            // 如果计数盒子为空
+            // 随机取余一个位置为空
+            // 修改这个槽位失败（出现并发）
             if (cs == null || (m = cs.length - 1) < 0 ||
                 (c = cs[ThreadLocalRandom.getProbe() & m]) == null ||
                 !(uncontended =
                   U.compareAndSetLong(c, CELLVALUE, v = c.value, v + x))) {
+                // 执行这个方法并结束
                 fullAddCount(x, uncontended);
                 return;
             }
@@ -2356,12 +2362,19 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
                 return;
             s = sumCount();
         }
+
+        // 检查是否需要扩容
         if (check >= 0) {
             Node<K,V>[] tab, nt; int n, sc;
+            // 如果map.size大于sizeCtl，即达到扩容阈值，且
+            // table 不是空，且table的长度小于 MAXIMUM_CAPACITY
             while (s >= (long)(sc = sizeCtl) && (tab = table) != null &&
                    (n = tab.length) < MAXIMUM_CAPACITY) {
+                // 得到一个标识
                 int rs = resizeStamp(n) << RESIZE_STAMP_SHIFT;
+                // 如果正在扩容
                 if (sc < 0) {
+
                     if (sc == rs + MAX_RESIZERS || sc == rs + 1 ||
                         (nt = nextTable) == null || transferIndex <= 0)
                         break;
@@ -2602,6 +2615,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
     }
 
     // See LongAdder version for explanation
+    // fullAddCount主要是用来初始化CounterCell，来记录元素个数，里面包含扩容，初始化等操作
     private final void fullAddCount(long x, boolean wasUncontended) {
         int h;
         if ((h = ThreadLocalRandom.getProbe()) == 0) {

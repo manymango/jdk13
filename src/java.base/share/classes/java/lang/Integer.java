@@ -1052,9 +1052,10 @@ public final class Integer extends Number
     /**
      * Returns an {@code Integer} instance representing the specified
      * {@code int} value.  If a new {@code Integer} instance is not
-     * required, this method should generally be used in preference to
+     * required,  如果不需要执行new方法
+     * this method should generally be used in preference to
      * the constructor {@link #Integer(int)}, as this method is likely
-     * to yield significantly better space and time performance by
+     * to yield significantly（显著提高） better space and time performance by
      * caching frequently requested values.
      *
      * This method will always cache values in the range -128 to 127,

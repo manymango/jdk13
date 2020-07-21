@@ -72,6 +72,11 @@ import jdk.internal.misc.VM;
  * <p>This class also provides additional commonly used bounded random
  * generation methods.
  *
+ * ThreadLocalRandom适用于多线程，是因为"种子"不再像Random类那样多线程共享，
+ * 而是每个线程内部都保留着一个属于自己的"种子"，
+ * 线程操作的是这个线程局部的"种子"，避免了生成随机数时"种子"的争抢，从而提升性能。
+ *
+ *
  * <p>Instances of {@code ThreadLocalRandom} are not cryptographically
  * secure.  Consider instead using {@link java.security.SecureRandom}
  * in security-sensitive applications. Additionally,
@@ -158,13 +163,18 @@ public class ThreadLocalRandom extends Random {
      * thread local seed value needs to be generated. Note that even
      * though the initialization is purely thread-local, we need to
      * rely on (static) atomic generators to initialize the values.
+     *
+     * 生成种子和探针值
+     *
      */
     static final void localInit() {
         int p = probeGenerator.addAndGet(PROBE_INCREMENT);
         int probe = (p == 0) ? 1 : p; // skip 0
         long seed = mix64(seeder.getAndAdd(SEEDER_INCREMENT));
         Thread t = Thread.currentThread();
+        // 通过 Unsafe 对象初始化当前线程的 threadLocalRandomSeed 字段
         U.putLong(t, SEED, seed);
+        // 通过 Unsafe 对象初始化当前线程的 threadLocalRandomProbe 字段
         U.putInt(t, PROBE, probe);
     }
 
@@ -934,7 +944,8 @@ public class ThreadLocalRandom extends Random {
 
     /**
      * Returns the probe value for the current thread without forcing
-     * initialization. Note that invoking ThreadLocalRandom.current()
+     * initialization. 返回当前线程的探测值，而不强制初始化。
+     * Note that invoking ThreadLocalRandom.current()
      * can be used to force initialization on zero return.
      */
     static final int getProbe() {
