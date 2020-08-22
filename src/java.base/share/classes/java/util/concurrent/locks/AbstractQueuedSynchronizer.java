@@ -871,6 +871,7 @@ public abstract class AbstractQueuedSynchronizer
 
     /**
      * Convenience method to interrupt current thread.
+     * 方便的方法来中断当前线程
      */
     static void selfInterrupt() {
         Thread.currentThread().interrupt();
@@ -898,6 +899,8 @@ public abstract class AbstractQueuedSynchronizer
     /**
      * Acquires in exclusive uninterruptible mode for thread already in
      * queue. Used by condition wait methods as well as acquire.
+     *
+     * 以不间断的排他模式获取线程
      *
      * @param node the node
      * @param arg the acquire argument
@@ -1089,6 +1092,7 @@ public abstract class AbstractQueuedSynchronizer
     // Main exported methods
 
     /**
+     * 独占锁
      * Attempts to acquire in exclusive mode. This method should query
      * if the state of the object permits it to be acquired in the
      * exclusive mode, and if so to acquire it.
@@ -1107,7 +1111,7 @@ public abstract class AbstractQueuedSynchronizer
      *        to a condition wait.  The value is otherwise uninterpreted
      *        and can represent anything you like.
      * @return {@code true} if successful. Upon success, this object has
-     *         been acquired.
+     *         been acquired. true:获取锁成功，false:获取锁失败
      * @throws IllegalMonitorStateException if acquiring would place this
      *         synchronizer in an illegal state. This exception must be
      *         thrown in a consistent fashion for synchronization to work
@@ -1236,8 +1240,10 @@ public abstract class AbstractQueuedSynchronizer
      *        can represent anything you like.
      */
     public final void acquire(int arg) {
+        // 直接获取锁失败，就在队列中等待
         if (!tryAcquire(arg) &&
             acquireQueued(addWaiter(Node.EXCLUSIVE), arg))
+            // 将线程状态设置为中断
             selfInterrupt();
     }
 
